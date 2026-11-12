@@ -1,0 +1,65 @@
+You are a senior full-stack developer building a production app for LEAFY KEYS, a private security company in Kenya. Build a mobile-first app with two modules: (1) a Digital Occurrence Book (OB) for static guards, and (2) Daily E-Bike Patrol Reports. It must integrate with our existing Leafy Keys Guard App.
+
+## 1. Users and roles (role-based access)
+- Static Officer: writes OB entries for their assigned site and shift only.
+- E-Bike Rider and E-Bike Crew Member: each patrol has exactly one rider and one crew member. Both must log in and confirm they are on the patrol.
+- Supervisor: views and approves reports for their sites and bikes, and receives alerts.
+- Operations / Control Room: live view of all sites, patrols and incidents.
+- Admin: manages users, sites, bikes, checkpoints, shifts and settings.
+- (Optional) Client: read-only access to the daily reports for their own site.
+
+## 2. Module A – Digital Occurrence Book (static officers)
+- Shift start: officer logs in, selects or is assigned a site, and records the handover from the previous officer (items, keys and equipment received, outstanding issues). The incoming officer confirms receipt.
+- Entry types: Routine/Patrol round, Incident, Visitor in/out, Vehicle in/out (plate number), Delivery, Key issued/returned, Alarm activation, Power/water outage, Police/emergency services visit, Equipment fault, Handover, Other.
+- Every entry records automatically: server timestamp (EAT, UTC+3), the officer's ID, site, GPS location, and the device time. It can also include free text, photos (compressed), and an optional voice note.
+- Entries are APPEND-ONLY. They can never be edited or deleted. Corrections are made as a new "Amendment" entry linked to the original, with a reason. Keep a full audit trail.
+- Running entry numbers per site per day, like a paper OB.
+- A panic/emergency button that alerts the supervisor and control room with the officer's GPS location.
+- Shift close: the officer signs digitally. The system then generates the Daily Site OB Report (PDF), and the supervisor reviews and approves it.
+
+## 3. Module B – Daily E-Bike Patrol Report
+- Patrol start: select bike (by ID or registration number). Rider and crew member both confirm they are on the patrol.
+- Pre-ride checklist: battery %, odometer reading, tyres, brakes, lights, horn, mirrors, helmets for both people, reflective gear, radio/phone charged. Include photos of the bike. Any failed item blocks the patrol until a supervisor overrides it, and the override is logged.
+- During patrol: GPS track is recorded at a sensible interval to save battery. Checkpoint scans use a QR code (optionally NFC) at each patrolled location. Incidents, suspicious activity and stops are logged using the same entry format as the OB. The panic button is available.
+- Missed or late checkpoints trigger an alert to the supervisor.
+- Patrol end: battery %, odometer reading, km covered (calculated automatically and checked against the odometer), any damage or faults, and charging status.
+- Generate the Daily E-Bike Patrol Report (PDF): crew, bike, times, route map, checkpoints hit or missed, incidents, km, battery used, and bike condition.
+- Bike fleet records: maintenance log, faults reported, and service due (by km).
+
+## 4. Supervisor / Control Room dashboard (web)
+- Live map of active patrols and staffed sites.
+- Alerts feed: panic, missed checkpoints, no OB entry for X minutes (configurable), and failed bike checks.
+- Search and filter all entries by date, site, officer, bike or entry type.
+- Approve daily reports. Export to PDF and Excel. Optionally email reports to clients automatically.
+- Basic analytics: incidents per site, patrol completion rate, km per bike, and bike faults.
+
+## 5. Integration with the existing Leafy Keys Guard App
+[FILL IN — describe the existing app: platform/tech, whether it has an API, how staff log in]
+Requirements:
+- Single sign-on: staff use their existing Leafy Keys Guard App login. Do not create a separate user database. If the app has no SSO, design a sync of user/site IDs and explain it.
+- Use the same staff IDs, site IDs and shift data as the guard app.
+- Provide a REST API and webhooks (e.g. "incident.created", "panic.triggered", "report.approved") so the guard app can receive events.
+- If the guard app cannot be changed, propose the least-effort integration and state the trade-offs.
+
+## 6. Non-functional requirements
+- Offline-first: entries, photos and checkpoint scans are saved on the device and synced when the signal returns. Sync must never create duplicate or lost entries. Show sync status to the user.
+- Works on low-end Android phones and on low/expensive mobile data: compress images and keep GPS use battery-friendly.
+- Languages: English and Swahili.
+- Security: encrypted data in transit and at rest, role-based access, session timeout, full audit log.
+- Compliance: Kenya Data Protection Act 2019. Show a staff consent screen for location tracking. Track location only during an active shift or patrol. Make data retention periods configurable.
+- Timezone: Africa/Nairobi (EAT). Store timestamps in UTC and display them in EAT.
+- Daily automated backups.
+- Branding: LEAFY KEYS name and logo [FILL IN brand colours].
+
+## 7. Tech stack
+[FILL IN if you have a preference or must match the guard app. Otherwise:] Recommend a stack suited to offline-first mobile plus a web dashboard, and justify the choice briefly.
+
+## 8. How to work
+Build in phases and stop for my review after each one:
+1. Data model (all tables/collections and their relationships) and the user-role permissions matrix.
+2. Authentication + integration approach with the guard app.
+3. Module A: OB (mobile).
+4. Module B: E-Bike patrol (mobile).
+5. Supervisor/control room dashboard and PDF reports.
+6. Alerts, offline sync testing, and deployment.
+Ask me clarifying questions before Phase 1 if anything is unclear. Do not guess — state any assumption explicitly.
